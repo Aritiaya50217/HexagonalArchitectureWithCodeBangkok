@@ -75,4 +75,3 @@ func initDataBase() *sqlx.DB {
 
 	return db
 }
-
