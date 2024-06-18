@@ -1,8 +1,10 @@
 package service
 
 import (
-	"log"
+	"database/sql"
 
+	"github.com/Aritiaya50217/CodeBangkok/errs"
+	"github.com/Aritiaya50217/CodeBangkok/logs"
 	"github.com/Aritiaya50217/CodeBangkok/repository"
 )
 
@@ -17,8 +19,8 @@ func NewCustomerService(cusRepo repository.CustomerRepository) customerService {
 func (s customerService) GetCustomers() ([]CustomerResponse, error) {
 	customers, err := s.custRepo.GetAll()
 	if err != nil {
-		log.Println(err)
-		return nil, err
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
 	}
 	customersRes := []CustomerResponse{}
 	for _, customer := range customers {
@@ -35,8 +37,11 @@ func (s customerService) GetCustomers() ([]CustomerResponse, error) {
 func (s customerService) GetCustomer(id int) (*CustomerResponse, error) {
 	customer, err := s.custRepo.GetById(id)
 	if err != nil {
-		log.Println(err)
-		return nil, err
+		if err == sql.ErrNoRows {
+			return nil, errs.NewNotFoundError("customer not found")
+		}
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
 	}
 	custResponse := CustomerResponse{
 		CustomerID: customer.CustomerID,
